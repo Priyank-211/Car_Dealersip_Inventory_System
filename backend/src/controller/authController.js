@@ -1,6 +1,7 @@
 import user from "../models/user.js";
 import bcrypt from "bcryptjs";
 
+//User registration functionality
 export const registerUser = async (req, res) => {
     try {
         const { name, email, password } = req.body;
@@ -23,7 +24,7 @@ export const registerUser = async (req, res) => {
             name,
             email,
             password: hashedPassword,
-            role: "user"
+
         });
         return res.status(201).json({
             success: true,
@@ -41,5 +42,10 @@ export const registerUser = async (req, res) => {
             message: "Internal server error"
         });
     }
+
+};
+
+//User Login functionality
+export const loginUser = async (req, res) => {
 
 };
