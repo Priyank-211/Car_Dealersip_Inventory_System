@@ -15,7 +15,7 @@ beforeAll(async () => {
     await mongoose.connect(TEST_DB_URI);
 });
 
-afterEach(async () => {
+beforeEach(async () => {
     await user.deleteMany({});
 });
 
