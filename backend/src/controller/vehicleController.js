@@ -183,3 +183,48 @@ export const deleteVehicle = async (req, res) => {
         });
     }
 };
+
+export const restockVehicle = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { quantityToAdd } = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid vehicle ID format"
+            });
+        }
+
+        if (quantityToAdd === undefined || quantityToAdd <= 0 || typeof quantityToAdd !== 'number') {
+            return res.status(400).json({
+                success: false,
+                message: "Please provide a valid quantity to add (must be greater than 0)"
+            });
+        }
+
+        const vehicle = await Vehicle.findById(id);
+
+        if (!vehicle) {
+            return res.status(404).json({
+                success: false,
+                message: "Vehicle not found"
+            });
+        }
+
+        vehicle.quantity += quantityToAdd;
+        await vehicle.save();
+
+        return res.status(200).json({
+            success: true,
+            message: "Vehicle restocked successfully",
+            vehicle
+        });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message
+        });
+    }
+};
