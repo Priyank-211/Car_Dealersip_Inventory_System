@@ -98,3 +98,55 @@ export const getVehicleById = async (req, res) => {
         });
     }
 };
+
+export const updateVehicle = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updates = req.body;
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid vehicle ID format"
+            });
+        }
+
+        // Validate that price or quantity (if being updated) are not negative
+        if (updates.price !== undefined && updates.price < 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Price cannot be negative"
+            });
+        }
+        if (updates.quantity !== undefined && updates.quantity < 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Quantity cannot be negative"
+            });
+        }
+
+        const vehicle = await Vehicle.findByIdAndUpdate(id, updates, {
+            returnDocument: "after", // Return the updated document
+            runValidators: true // Enforce model validations
+        });
+
+        if (!vehicle) {
+            return res.status(404).json({
+                success: false,
+                message: "Vehicle not found"
+            });
+        }
+
+        return res.status(200).json({
+            success: true,
+            vehicle
+        });
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message
+        });
+    }
+};
