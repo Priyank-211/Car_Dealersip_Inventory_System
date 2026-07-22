@@ -1,21 +1,24 @@
-import React from 'react'
+import { Routes, Route } from "react-router-dom";
+import { Header } from "./components/Header.jsx";
+import { Footer } from "./components/Footer.jsx";
+import Home from "./pages/Home.jsx";
+import Vehicles from "./pages/Vehicles.jsx";
+import Placeholder from "./pages/Placeholder.jsx";
 
-function App() {
+export default function App() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full text-center">
-        <h1 className="text-3xl font-bold text-blue-500 mb-4">
-          Car Dealership System
-        </h1>
-        <p className="text-gray-600 mb-6">
-          Frontend successfully scaffolded with React, Vite, and TailwindCSS v4!
-        </p>
-        <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg transition-colors">
-          Get Started
-        </button>
-      </div>
+    <div className="flex min-h-screen flex-col bg-background font-sans antialiased text-foreground">
+      <Header />
+      <main className="flex-1">
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/vehicles" element={<Vehicles />} />
+          <Route path="/about" element={<Placeholder title="About" />} />
+          <Route path="/login" element={<Placeholder title="Login" />} />
+          <Route path="/register" element={<Placeholder title="Register" />} />
+        </Routes>
+      </main>
+      <Footer />
     </div>
-  )
+  );
 }
-
-export default App
