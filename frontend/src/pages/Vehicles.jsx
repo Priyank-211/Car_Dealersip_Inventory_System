@@ -14,7 +14,7 @@ export default function Vehicles() {
 
     return (
         <div className="min-h-screen bg-background pt-32 pb-24 px-6 md:px-12 lg:px-20">
-            <div className="mx-auto max-w-7xl">
+            <div className="w-full">
                 {/* Header Area */}
                 <div className="mb-10 max-w-2xl">
                     <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-4">
