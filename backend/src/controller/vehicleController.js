@@ -1,4 +1,5 @@
 import Vehicle from "../models/vehicle.js";
+import Purchase from "../models/purchase.js";
 import mongoose from "mongoose";
 
 export const addVehicle = async (req, res) => {
@@ -230,6 +231,61 @@ export const restockVehicle = async (req, res) => {
             message: "Vehicle restocked successfully",
             vehicle
         });
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: "Server error",
+            error: error.message
+        });
+    }
+};
+
+export const purchaseVehicle = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user.id; // From authMiddleware
+
+        if (!mongoose.Types.ObjectId.isValid(id)) {
+            return res.status(400).json({
+                success: false,
+                message: "Invalid vehicle ID format"
+            });
+        }
+
+        const vehicle = await Vehicle.findById(id);
+
+        if (!vehicle) {
+            return res.status(404).json({
+                success: false,
+                message: "Vehicle not found"
+            });
+        }
+
+        if (vehicle.quantity <= 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Vehicle is out of stock / quantity not available"
+            });
+        }
+
+        // Decrement stock
+        vehicle.quantity -= 1;
+        await vehicle.save();
+
+        // Create Purchase record
+        const purchase = await Purchase.create({
+            user: userId,
+            vehicle: vehicle._id,
+            priceAtPurchase: vehicle.price,
+            status: "completed"
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: "Vehicle purchased successfully",
+            purchase
+        });
+
     } catch (error) {
         return res.status(500).json({
             success: false,
