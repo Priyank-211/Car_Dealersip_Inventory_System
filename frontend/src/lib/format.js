@@ -1,8 +1,8 @@
 export function currency(value) {
     if (value === undefined || value === null) return "$0";
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat("en-IN", {
         style: "currency",
-        currency: "USD",
+        currency: "INR",
         maximumFractionDigits: 0,
     }).format(value);
 }
