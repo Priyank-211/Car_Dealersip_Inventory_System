@@ -5,6 +5,10 @@ import { VehicleCard } from "../components/VehicleCard";
 
 export default function Vehicles() {
     const [searchQuery, setSearchQuery] = useState("");
+    const [selectedMake, setSelectedMake] = useState("All");
+    const [selectedModel, setSelectedModel] = useState("All");
+    const [selectedCategory, setSelectedCategory] = useState("All");
+    const [selectedPrice, setSelectedPrice] = useState("All");
     const [vehicles, setVehicles] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -22,10 +26,40 @@ export default function Vehicles() {
         loadVehicles();
     }, []);
 
-    const filteredVehicles = vehicles.filter(v => 
-        `${v.make} ${v.model}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        v.category.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    // Extract unique options dynamically
+    const makes = ["All", ...new Set(vehicles.map(v => v.make))];
+    const models = ["All", ...new Set(vehicles.filter(v => selectedMake === "All" || v.make === selectedMake).map(v => v.model))];
+    const categories = ["All", ...new Set(vehicles.map(v => v.category))];
+    const prices = ["All", "Under ₹10,00,000", "₹10,00,000 - ₹20,00,000", "Over ₹20,00,000"];
+
+    // Update selected model if the current model doesn't belong to the new make
+    useEffect(() => {
+        if (selectedMake !== "All" && selectedModel !== "All") {
+            const validModelsForMake = vehicles.filter(v => v.make === selectedMake).map(v => v.model);
+            if (!validModelsForMake.includes(selectedModel)) {
+                setSelectedModel("All");
+            }
+        }
+    }, [selectedMake, selectedModel, vehicles]);
+
+    const filteredVehicles = vehicles.filter(v => {
+        // Search Filter
+        const matchesSearch = `${v.make} ${v.model}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              v.category.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        // Dropdown Filters
+        const matchesMake = selectedMake === "All" || v.make === selectedMake;
+        const matchesModel = selectedModel === "All" || v.model === selectedModel;
+        const matchesCategory = selectedCategory === "All" || v.category === selectedCategory;
+        
+        // Price Filter
+        let matchesPrice = true;
+        if (selectedPrice === "Under ₹10,00,000") matchesPrice = v.price < 1000000;
+        if (selectedPrice === "₹10,00,000 - ₹20,00,000") matchesPrice = v.price >= 1000000 && v.price <= 2000000;
+        if (selectedPrice === "Over ₹20,00,000") matchesPrice = v.price > 2000000;
+
+        return matchesSearch && matchesMake && matchesModel && matchesCategory && matchesPrice;
+    });
 
     return (
         <div className="min-h-screen bg-background pt-32 pb-24 px-6 md:px-12 lg:px-20">
@@ -64,28 +98,45 @@ export default function Vehicles() {
 
                     {/* Dropdowns */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <select className="appearance-none rounded-lg border border-border/40 bg-background/50 px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
-                            <option>All Makes</option>
-                            <option>Aurora</option>
-                            <option>Meridian</option>
+                        <select 
+                            value={selectedMake}
+                            onChange={(e) => setSelectedMake(e.target.value)}
+                            className="appearance-none rounded-lg border border-border/40 bg-background/50 px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                        >
+                            {makes.map(make => (
+                                <option key={make} value={make}>{make === "All" ? "All Makes" : make}</option>
+                            ))}
                         </select>
                         
-                        <select className="appearance-none rounded-lg border border-border/40 bg-background/50 px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
-                            <option>All Models</option>
+                        <select 
+                            value={selectedModel}
+                            onChange={(e) => setSelectedModel(e.target.value)}
+                            className="appearance-none rounded-lg border border-border/40 bg-background/50 px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                            disabled={selectedMake === "All" && models.length <= 1}
+                        >
+                            {models.map(model => (
+                                <option key={model} value={model}>{model === "All" ? "All Models" : model}</option>
+                            ))}
                         </select>
 
-                        <select className="appearance-none rounded-lg border border-border/40 bg-background/50 px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
-                            <option>All Categories</option>
-                            <option>Sports</option>
-                            <option>Sedan</option>
-                            <option>SUV</option>
+                        <select 
+                            value={selectedCategory}
+                            onChange={(e) => setSelectedCategory(e.target.value)}
+                            className="appearance-none rounded-lg border border-border/40 bg-background/50 px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                        >
+                            {categories.map(cat => (
+                                <option key={cat} value={cat}>{cat === "All" ? "All Categories" : cat}</option>
+                            ))}
                         </select>
 
-                        <select className="appearance-none rounded-lg border border-border/40 bg-background/50 px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
-                            <option>Any Price</option>
-                            <option>Under $50k</option>
-                            <option>$50k - $100k</option>
-                            <option>Over $100k</option>
+                        <select 
+                            value={selectedPrice}
+                            onChange={(e) => setSelectedPrice(e.target.value)}
+                            className="appearance-none rounded-lg border border-border/40 bg-background/50 px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                        >
+                            {prices.map(price => (
+                                <option key={price} value={price}>{price === "All" ? "Any Price" : price}</option>
+                            ))}
                         </select>
                     </div>
                 </div>
