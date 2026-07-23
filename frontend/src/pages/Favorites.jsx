@@ -1,19 +1,159 @@
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { HeartCrack } from "lucide-react";
+import { HeartCrack, Loader2, Check, Heart } from "lucide-react";
 import { useFavorites } from "../hooks/useFavorites";
-import { vehicles } from "../data/mockData";
-import { VehicleCard } from "../components/VehicleCard";
+import { api } from "../lib/api";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+
+const formatPrice = (price) => {
+    return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        maximumFractionDigits: 0
+    }).format(price);
+};
+
+function FavoriteItem({ vehicle, toggleFavorite }) {
+    const [selectedImageIdx, setSelectedImageIdx] = useState(0);
+    const inStock = vehicle.quantity > 0;
+    const { user } = useAuth();
+    const navigate = useNavigate();
+
+    const handlePurchase = () => {
+        if (!user) {
+            navigate("/login");
+            return;
+        }
+        alert("Purchase flow coming soon!");
+    };
+
+    return (
+        <div className="bg-background border-b border-border/50 py-12 last:border-0">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+                {/* Left Column - Image & Features */}
+                <div className="lg:col-span-7">
+                    <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border/50 bg-[#121212] shadow-sm mb-4">
+                        <img
+                            src={vehicle.images && vehicle.images.length > 0 ? vehicle.images[selectedImageIdx] : vehicle.image}
+                            alt={`${vehicle.make} ${vehicle.model}`}
+                            className="h-full w-full object-cover transition-opacity duration-300"
+                        />
+                    </div>
+
+                    {/* Thumbnails */}
+                    {vehicle.images && vehicle.images.length > 1 && (
+                        <div className="grid grid-cols-5 gap-3">
+                            {vehicle.images.map((img, idx) => (
+                                <button 
+                                    key={idx} 
+                                    onClick={() => setSelectedImageIdx(idx)}
+                                    className={`aspect-[4/3] rounded-lg overflow-hidden border-2 transition-all ${selectedImageIdx === idx ? 'border-primary ring-2 ring-primary/20 scale-95' : 'border-transparent hover:border-border/50 opacity-60 hover:opacity-100'}`}
+                                >
+                                    <img src={img} alt="thumbnail" className="h-full w-full object-cover" />
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Right Column - Details */}
+                <div className="lg:col-span-5 flex flex-col">
+                    <div className="mb-2">
+                        <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground">
+                            {vehicle.make} {vehicle.model}
+                        </h1>
+                    </div>
+                    <p className="text-lg text-muted-foreground mb-8">{vehicle.year} • {vehicle.category}</p>
+                    
+                    <div className="mb-10">
+                        <p className="text-5xl font-bold text-foreground tracking-tight">
+                            {formatPrice(vehicle.price)}
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-2">Excludes taxes and fees</p>
+                    </div>
+
+                    <div className="border border-border/50 rounded-2xl bg-[#121212] overflow-hidden mb-8 shadow-sm">
+                        <div className="px-6 py-4 border-b border-border/50 bg-background/30">
+                            <h3 className="font-semibold text-foreground">Vehicle Details</h3>
+                        </div>
+                        <div className="p-6 flex flex-col gap-4 text-sm">
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Make</span>
+                                <span className="font-medium text-foreground">{vehicle.make}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Model</span>
+                                <span className="font-medium text-foreground">{vehicle.model}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Category</span>
+                                <span className="font-medium text-foreground">{vehicle.category}</span>
+                            </div>
+                            <div className="flex justify-between">
+                                <span className="text-muted-foreground">Stock</span>
+                                {inStock ? (
+                                    <span className="font-medium text-primary flex items-center gap-1">
+                                        <Check className="h-4 w-4" /> {vehicle.quantity} Available
+                                    </span>
+                                ) : (
+                                    <span className="font-medium text-red-500">Out of Stock</span>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    <button
+                        onClick={handlePurchase}
+                        disabled={!inStock}
+                        className={`w-full py-4 rounded-xl text-lg font-bold transition-all ${
+                            inStock 
+                            ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 active:scale-[0.98]' 
+                            : 'bg-secondary text-muted-foreground cursor-not-allowed border border-border'
+                        }`}
+                    >
+                        {inStock ? 'Purchase Vehicle' : 'Out of Stock'}
+                    </button>
+
+                    <button
+                        onClick={() => toggleFavorite(vehicle._id || vehicle.id)}
+                        className={`w-full mt-4 py-4 rounded-xl text-lg font-bold transition-all flex items-center justify-center gap-2 border bg-secondary/50 text-foreground border-border hover:bg-secondary`}
+                    >
+                        <Heart className="h-5 w-5 fill-red-500 text-red-500" />
+                        Remove from Favorites
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
 
 export default function Favorites() {
-    const { favorites } = useFavorites();
+    const { favorites, toggleFavorite } = useFavorites();
+    const [vehicles, setVehicles] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    const favoriteVehicles = vehicles.filter(v => favorites.includes(v.id));
+    useEffect(() => {
+        const loadVehicles = async () => {
+            try {
+                const data = await api.listVehicles();
+                setVehicles(data);
+            } catch (err) {
+                console.error("Failed to load vehicles", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadVehicles();
+    }, []);
+
+    const favoriteVehicles = vehicles.filter(v => favorites.includes(v._id || v.id));
 
     return (
         <div className="min-h-screen bg-background pt-32 pb-24 px-6 md:px-12 lg:px-20">
-            <div className="w-full">
+            <div className="max-w-7xl mx-auto">
                 {/* Header Area */}
-                <div className="mb-10 max-w-2xl">
+                <div className="mb-10 border-b border-border/50 pb-8">
                     <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-foreground mb-4">
                         Your Favorites
                     </h1>
@@ -22,7 +162,11 @@ export default function Favorites() {
                     </p>
                 </div>
 
-                {favoriteVehicles.length === 0 ? (
+                {loading ? (
+                    <div className="flex justify-center items-center py-20">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                ) : favoriteVehicles.length === 0 ? (
                     <div className="flex flex-col items-center justify-center py-20 text-center border border-border/50 rounded-2xl bg-[#121212]">
                         <HeartCrack className="h-12 w-12 text-muted-foreground mb-4" />
                         <h2 className="text-xl font-bold text-foreground mb-2">No favorites yet</h2>
@@ -38,15 +182,18 @@ export default function Favorites() {
                     </div>
                 ) : (
                     <>
-                        {/* Results Header */}
                         <div className="mb-6 text-sm font-medium text-muted-foreground">
                             Showing {favoriteVehicles.length} saved vehicle{favoriteVehicles.length !== 1 ? 's' : ''}
                         </div>
 
-                        {/* Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {/* List of full vehicle layouts */}
+                        <div className="flex flex-col">
                             {favoriteVehicles.map((vehicle) => (
-                                <VehicleCard key={vehicle.id} vehicle={vehicle} />
+                                <FavoriteItem 
+                                    key={vehicle._id || vehicle.id} 
+                                    vehicle={vehicle} 
+                                    toggleFavorite={toggleFavorite} 
+                                />
                             ))}
                         </div>
                     </>

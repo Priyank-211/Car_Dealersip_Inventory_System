@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 import { ArrowRight, CarFront } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 export function CTASection() {
+    const { user } = useAuth();
     return (
         <section className="relative overflow-hidden py-24 px-6 md:px-12 lg:px-20 border-t border-border/50">
             {/* Background elements */}
@@ -22,13 +24,15 @@ export function CTASection() {
                 </p>
                 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                    <Link
-                        to="/register"
-                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-bold text-primary-foreground transition-all hover:bg-primary/90 hover:scale-105 active:scale-95 shadow-lg shadow-primary/20"
-                    >
-                        Create your account
-                        <ArrowRight className="h-5 w-5" />
-                    </Link>
+                    {!user && (
+                        <Link
+                            to="/register"
+                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-8 py-4 text-base font-bold text-primary-foreground transition-all hover:bg-primary/90 hover:scale-105 active:scale-95 shadow-lg shadow-primary/20"
+                        >
+                            Create your account
+                            <ArrowRight className="h-5 w-5" />
+                        </Link>
+                    )}
                     
                     <Link
                         to="/contact"

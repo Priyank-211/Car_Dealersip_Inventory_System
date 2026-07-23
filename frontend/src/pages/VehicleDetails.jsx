@@ -1,12 +1,41 @@
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Check, Heart } from "lucide-react";
+import { ArrowLeft, Check, Heart, Loader2 } from "lucide-react";
 import { useFavorites } from "../hooks/useFavorites";
-import { vehicles } from "../data/mockData";
+import { api } from "../lib/api";
+import { useAuth } from "../context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function VehicleDetails() {
     const { id } = useParams();
-    const vehicle = vehicles.find((v) => v.id === Number(id));
+    const [vehicle, setVehicle] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [selectedImageIdx, setSelectedImageIdx] = useState(0);
     const { toggleFavorite, isFavorite } = useFavorites();
+    const { user } = useAuth();
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const fetchVehicle = async () => {
+            try {
+                const data = await api.getVehicleById(id);
+                setVehicle(data);
+            } catch (err) {
+                console.error("Failed to load vehicle details", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchVehicle();
+    }, [id]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-background pt-32 pb-24 flex items-center justify-center">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        );
+    }
 
     if (!vehicle) {
         return (
@@ -28,7 +57,16 @@ export default function VehicleDetails() {
     };
 
     const inStock = vehicle.quantity > 0;
-    const isFav = isFavorite(vehicle.id);
+    const isFav = isFavorite(vehicle._id || vehicle.id);
+
+    const handlePurchase = () => {
+        if (!user) {
+            navigate("/login");
+            return;
+        }
+        // TODO: Implement actual purchase flow
+        alert("Purchase flow coming soon!");
+    };
 
 
     return (
@@ -41,15 +79,28 @@ export default function VehicleDetails() {
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
                     {/* Left Column - Image & Features */}
                     <div className="lg:col-span-7">
-                        <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border/50 bg-[#121212] shadow-sm">
+                        <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border/50 bg-[#121212] shadow-sm mb-4">
                             <img
-                                src={vehicle.image}
+                                src={vehicle.images && vehicle.images.length > 0 ? vehicle.images[selectedImageIdx] : vehicle.image}
                                 alt={`${vehicle.make} ${vehicle.model}`}
-                                className="h-full w-full object-cover"
+                                className="h-full w-full object-cover transition-opacity duration-300"
                             />
                         </div>
 
-
+                        {/* Thumbnails */}
+                        {vehicle.images && vehicle.images.length > 1 && (
+                            <div className="grid grid-cols-5 gap-3">
+                                {vehicle.images.map((img, idx) => (
+                                    <button 
+                                        key={idx} 
+                                        onClick={() => setSelectedImageIdx(idx)}
+                                        className={`aspect-[4/3] rounded-lg overflow-hidden border-2 transition-all ${selectedImageIdx === idx ? 'border-primary ring-2 ring-primary/20 scale-95' : 'border-transparent hover:border-border/50 opacity-60 hover:opacity-100'}`}
+                                    >
+                                        <img src={img} alt="thumbnail" className="h-full w-full object-cover" />
+                                    </button>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Right Column - Details */}
@@ -99,6 +150,7 @@ export default function VehicleDetails() {
                         </div>
 
                         <button
+                            onClick={handlePurchase}
                             disabled={!inStock}
                             className={`w-full py-4 rounded-xl text-lg font-bold transition-all ${
                                 inStock 
@@ -110,7 +162,7 @@ export default function VehicleDetails() {
                         </button>
 
                         <button
-                            onClick={() => toggleFavorite(vehicle.id)}
+                            onClick={() => toggleFavorite(vehicle._id || vehicle.id)}
                             className={`w-full mt-4 py-4 rounded-xl text-lg font-bold transition-all flex items-center justify-center gap-2 border ${
                                 isFav 
                                 ? 'bg-secondary/50 text-foreground border-border hover:bg-secondary' 

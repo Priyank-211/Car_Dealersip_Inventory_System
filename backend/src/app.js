@@ -4,6 +4,7 @@ import multer from "multer";
 
 import authRoutes from "./routes/authRoutes.js";
 import vehicleRoutes from "./routes/vehicleRoutes.js";
+import userRoutes from "./routes/userRoutes.js";
 
 const app = express();
 
@@ -14,6 +15,7 @@ app.use(express.json());
 //Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/vehicles", vehicleRoutes);
+app.use("/api/users", userRoutes);
 
 // Temporary health-check route
 app.get("/api/health", (req, res) => {

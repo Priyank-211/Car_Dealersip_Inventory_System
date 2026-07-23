@@ -1,12 +1,27 @@
-import { useState } from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
-import { vehicles } from "../data/mockData";
+import { useState, useEffect } from "react";
+import { Search, SlidersHorizontal, Loader2 } from "lucide-react";
+import { api } from "../lib/api";
 import { VehicleCard } from "../components/VehicleCard";
 
 export default function Vehicles() {
     const [searchQuery, setSearchQuery] = useState("");
+    const [vehicles, setVehicles] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-    // Simple mock filter state (UI only as requested)
+    useEffect(() => {
+        const loadVehicles = async () => {
+            try {
+                const data = await api.listVehicles();
+                setVehicles(data);
+            } catch (err) {
+                console.error("Failed to load vehicles", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadVehicles();
+    }, []);
+
     const filteredVehicles = vehicles.filter(v => 
         `${v.make} ${v.model}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
         v.category.toLowerCase().includes(searchQuery.toLowerCase())
@@ -81,11 +96,21 @@ export default function Vehicles() {
                 </div>
 
                 {/* Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {filteredVehicles.map((vehicle) => (
-                        <VehicleCard key={vehicle.id} vehicle={vehicle} />
-                    ))}
-                </div>
+                {loading ? (
+                    <div className="py-20 flex justify-center items-center">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    </div>
+                ) : filteredVehicles.length === 0 ? (
+                    <div className="py-20 text-center text-muted-foreground">
+                        No vehicles found matching your criteria.
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {filteredVehicles.map((vehicle) => (
+                            <VehicleCard key={vehicle._id || vehicle.id} vehicle={vehicle} />
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

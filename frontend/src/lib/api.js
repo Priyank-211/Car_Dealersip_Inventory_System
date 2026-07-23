@@ -1,33 +1,66 @@
-import { vehicles as mockVehicles } from "../data/mockData.js";
+import axios from 'axios';
 
-// In-memory state for mock API
-let vehicles = [...mockVehicles].map(v => ({
-    ...v,
-    quantity: v.quantity ?? Math.floor(Math.random() * 10) // Mock some quantities since our mockData doesn't have them
-}));
+const apiInstance = axios.create({
+    baseURL: '/api',
+});
 
-const delay = (ms) => new Promise(res => setTimeout(res, ms));
+apiInstance.interceptors.request.use(
+    (config) => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    },
+    (error) => Promise.reject(error)
+);
 
 export const api = {
     listVehicles: async () => {
-        await delay(500); // Simulate network latency
-        return vehicles;
-    },
-    
-    deleteVehicle: async (id) => {
-        await delay(400);
-        const exists = vehicles.find(v => v.id === id);
-        if (!exists) throw new Error("Vehicle not found");
-        vehicles = vehicles.filter(v => v.id !== id);
-        return { success: true };
+        const response = await apiInstance.get('/vehicles/');
+        // Backend returns { success: true, vehicles: [...] }
+        return response.data.vehicles || [];
     },
 
-    restockVehicle: async (id, quantity) => {
-        await delay(400);
-        const index = vehicles.findIndex(v => v.id === id);
-        if (index === -1) throw new Error("Vehicle not found");
-        
-        vehicles[index] = { ...vehicles[index], quantity };
-        return vehicles[index];
+    getVehicleById: async (id) => {
+        const response = await apiInstance.get(`/vehicles/${id}`);
+        return response.data.vehicle;
+    },
+    
+    addVehicle: async (formData) => {
+        // Send as multipart/form-data
+        const response = await apiInstance.post('/vehicles/', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+        return response.data.vehicle;
+    },
+
+    updateVehicle: async (id, data) => {
+        // Can be JSON or multipart depending on if we update images
+        const response = await apiInstance.put(`/vehicles/${id}`, data);
+        return response.data.vehicle;
+    },
+
+    deleteVehicle: async (id) => {
+        const response = await apiInstance.delete(`/vehicles/${id}`);
+        return response.data;
+    },
+
+    restockVehicle: async (id, quantityToAdd) => {
+        const response = await apiInstance.patch(`/vehicles/${id}/restock`, { quantityToAdd });
+        return response.data.vehicle;
+    },
+
+    // Favorites API
+    getFavorites: async () => {
+        const response = await apiInstance.get('/users/favorites');
+        return response.data.favorites;
+    },
+
+    toggleFavorite: async (vehicleId) => {
+        const response = await apiInstance.post(`/users/favorites/${vehicleId}`);
+        return response.data.favorites;
     }
 };

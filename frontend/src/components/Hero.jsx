@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import heroImage from "../assets/hero-car.png";
+import { useAuth } from "../context/AuthContext";
 
 const stats = [
     { value: "200+", label: "Vehicles" },
@@ -9,6 +10,7 @@ const stats = [
 ];
 
 export function Hero() {
+    const { user } = useAuth();
     return (
         <section className="relative min-h-[calc(100vh-5rem)] overflow-hidden pt-20">
             <img
@@ -45,12 +47,14 @@ export function Hero() {
                             Explore Vehicles
                             <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
                         </Link>
-                        <Link
-                            to="/register"
-                            className="inline-flex items-center justify-center rounded-lg border border-border bg-secondary/60 px-5 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-                        >
-                            Register
-                        </Link>
+                        {!user && (
+                            <Link
+                                to="/register"
+                                className="inline-flex items-center justify-center rounded-lg border border-border bg-secondary/60 px-5 py-3 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+                            >
+                                Register
+                            </Link>
+                        )}
                     </div>
                 </div>
 

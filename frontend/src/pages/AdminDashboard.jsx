@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Plus, Pencil, Trash2, PackagePlus, AlertTriangle, Search, Car, LayoutDashboard, Store, LogOut, Layers, AlertCircle, CheckCircle2, Box } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import Modal from '../components/Modal.jsx'
+import AddVehicleModal from '../components/AddVehicleModal.jsx'
 import { api } from '../lib/api.js'
 import { currency, stockStatus } from '../lib/format.js'
 import { useAuth } from '../context/AuthContext'
@@ -21,6 +22,7 @@ export default function AdminDashboard() {
   const [restockTarget, setRestockTarget] = useState(null)
   const [restockQty, setRestockQty] = useState('')
   const [restocking, setRestocking] = useState(false)
+  const [addModalOpen, setAddModalOpen] = useState(false)
 
   const load = () => {
     setLoading(true)
@@ -135,7 +137,7 @@ export default function AdminDashboard() {
               <h1 className="text-3xl font-bold tracking-tight text-foreground mb-2">Inventory Management</h1>
               <p className="text-muted-foreground text-sm">Add, edit, restock, and remove vehicles from your inventory.</p>
             </div>
-            <button className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
+            <button onClick={() => setAddModalOpen(true)} className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:bg-primary/90 transition-colors">
               <Plus className="h-4 w-4" /> Add Vehicle
             </button>
           </div>
@@ -201,7 +203,11 @@ export default function AdminDashboard() {
                           <td className="px-6 py-4">
                             <div className="flex items-center gap-4">
                               <div className="h-12 w-16 shrink-0 overflow-hidden rounded-lg bg-secondary">
-                                {v.image && <img src={v.image} alt="" className="h-full w-full object-cover" />}
+                                {v.images && v.images.length > 0 ? (
+                                  <img src={v.images[0]} alt="" className="h-full w-full object-cover" />
+                                ) : (
+                                  v.image && <img src={v.image} alt="" className="h-full w-full object-cover" />
+                                )}
                               </div>
                               <div>
                                 <p className="font-semibold text-foreground">{v.make} {v.model}</p>
@@ -302,6 +308,17 @@ export default function AdminDashboard() {
           </div>
         </div>
       </Modal>
+
+      {/* Add Vehicle Modal */}
+      <AddVehicleModal 
+        open={addModalOpen} 
+        onClose={() => setAddModalOpen(false)} 
+        onSuccess={() => {
+          setAddModalOpen(false);
+          showToast('success', 'Vehicle added successfully!');
+          load();
+        }} 
+      />
 
       {/* Toast */}
       {toast && (

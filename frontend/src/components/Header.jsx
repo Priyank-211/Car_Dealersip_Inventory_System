@@ -57,18 +57,30 @@ export function Header() {
 
                 <div className="hidden items-center gap-6 md:flex">
                     {user ? (
-                        <div className="flex items-center gap-4">
-                            <div className="flex items-center gap-2 text-sm font-semibold text-foreground bg-secondary/50 px-4 py-2 rounded-full border border-border/50">
-                                <User className="h-4 w-4 text-primary" />
-                                {user.name}
-                            </div>
-                            <button
-                                onClick={handleLogout}
-                                className="flex items-center gap-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-red-500"
-                                title="Logout"
-                            >
-                                <LogOut className="h-5 w-5" />
+                        <div className="relative group">
+                            <button className="flex items-center gap-3 text-sm font-semibold text-foreground bg-secondary/30 hover:bg-secondary/60 px-2 py-1.5 pr-4 rounded-full border border-border/50 transition-all duration-200">
+                                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/20 text-primary">
+                                    <User className="h-4 w-4" />
+                                </div>
+                                <span className="leading-none">{user.name}</span>
                             </button>
+                            
+                            <div className="absolute right-0 top-[calc(100%+0.5rem)] w-56 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform translate-y-2 group-hover:translate-y-0 z-50">
+                                <div className="rounded-xl border border-border/60 bg-background/95 backdrop-blur-xl shadow-2xl p-2">
+                                    <div className="px-3 py-3 mb-1 border-b border-border/40">
+                                        <p className="text-sm font-bold text-foreground truncate">{user.name}</p>
+                                        <p className="text-xs font-medium text-muted-foreground truncate mt-0.5">{user.email}</p>
+                                    </div>
+                                    
+                                    <button
+                                        onClick={handleLogout}
+                                        className="w-full flex items-center gap-2 px-3 py-2.5 text-sm font-semibold text-red-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all duration-200"
+                                    >
+                                        <LogOut className="h-4 w-4" />
+                                        Sign out
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     ) : (
                         <>
@@ -153,16 +165,21 @@ export function Header() {
                         <div className="mt-4 flex flex-col gap-3 border-t border-border/30 pt-4">
                             {user ? (
                                 <>
-                                    <div className="flex items-center gap-2 py-2 text-sm font-semibold text-foreground">
-                                        <User className="h-4 w-4 text-primary" />
-                                        {user.name}
+                                    <div className="flex items-center gap-3 py-3 border-b border-border/30 mb-3">
+                                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary/20 text-primary">
+                                            <User className="h-5 w-5" />
+                                        </div>
+                                        <div className="flex flex-col min-w-0">
+                                            <span className="text-sm font-bold text-foreground truncate">{user.name}</span>
+                                            <span className="text-xs font-medium text-muted-foreground truncate">{user.email}</span>
+                                        </div>
                                     </div>
                                     <button
                                         onClick={handleLogout}
-                                        className="flex items-center justify-center gap-2 rounded-lg bg-red-500/10 px-4 py-2 text-center text-sm font-medium text-red-500 transition-colors hover:bg-red-500/20"
+                                        className="flex items-center justify-center gap-2 rounded-xl bg-red-500/10 px-4 py-3 text-center text-sm font-bold text-red-500 transition-all active:scale-[0.98] hover:bg-red-500/20"
                                     >
-                                        <LogOut className="h-4 w-4" />
-                                        Logout
+                                        <LogOut className="h-4 w-4 shrink-0" />
+                                        Sign out
                                     </button>
                                 </>
                             ) : (

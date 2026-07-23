@@ -19,7 +19,7 @@ export function VehicleCard({ vehicle }) {
         >
             <div className="relative aspect-[4/3] bg-black/50 overflow-hidden">
                 <img
-                    src={vehicle.image}
+                    src={vehicle.images && vehicle.images.length > 0 ? vehicle.images[0] : vehicle.image}
                     alt={`${vehicle.make} ${vehicle.model}`}
                     className="h-full w-full object-cover transition-transform duration-500 hover:scale-105"
                 />
