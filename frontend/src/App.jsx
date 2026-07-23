@@ -8,6 +8,8 @@ import LoginPage from "./pages/LoginPage.jsx";
 import RegisterPage from "./pages/RegisterPage.jsx";
 import AdminDashboard from "./pages/AdminDashboard.jsx";
 import Placeholder from "./pages/Placeholder.jsx";
+import VehicleDetails from "./pages/VehicleDetails.jsx";
+import Favorites from "./pages/Favorites.jsx";
 
 export default function App() {
   const location = useLocation();
@@ -20,7 +22,10 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/vehicles" element={<Vehicles />} />
+          <Route path="/vehicles/:id" element={<VehicleDetails />} />
           <Route path="/about" element={<Placeholder title="About" />} />
+          <Route path="/purchases" element={<Placeholder title="Purchases" />} />
+          <Route path="/favorites" element={<Favorites />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route path="/admin" element={

@@ -129,4 +129,78 @@ describe("POST /api/vehicles", () => {
             expect(res.statusCode).toBe(400);
         });
     });
+
+    describe("Add Vehicle - Image Uploads", () => {
+        const dummyImage = Buffer.from("fake image content");
+
+        it("should successfully add a vehicle with exactly 1 image (min boundary)", async () => {
+            const res = await request(app)
+                .post("/api/vehicles")
+                .set("Authorization", `Bearer ${token}`)
+                .field("make", "BMW")
+                .field("model", "M4 Competition")
+                .field("category", "Coupe")
+                .field("price", 153000)
+                .field("quantity", 3)
+                .attach("images", dummyImage, "image1.jpg");
+
+            expect(res.statusCode).toBe(201);
+            expect(res.body.vehicle.images).toBeDefined();
+            expect(res.body.vehicle.images.length).toBe(1);
+        });
+
+        it("should successfully add a vehicle with exactly 5 images (max boundary)", async () => {
+            const req = request(app)
+                .post("/api/vehicles")
+                .set("Authorization", `Bearer ${token}`)
+                .field("make", "BMW")
+                .field("model", "M4 Competition")
+                .field("category", "Coupe")
+                .field("price", 153000)
+                .field("quantity", 3);
+
+            for (let i = 0; i < 5; i++) {
+                req.attach("images", dummyImage, `image${i}.jpg`);
+            }
+
+            const res = await req;
+
+            expect(res.statusCode).toBe(201);
+            expect(res.body.vehicle.images).toBeDefined();
+            expect(res.body.vehicle.images.length).toBe(5);
+        });
+
+        it("should return 400 if 0 images are provided", async () => {
+            const res = await request(app)
+                .post("/api/vehicles")
+                .set("Authorization", `Bearer ${token}`)
+                .field("make", "BMW")
+                .field("model", "M4")
+                .field("category", "Coupe")
+                .field("price", 153000)
+                .field("quantity", 3);
+            
+            // Note: Not attaching any 'images'
+            expect(res.statusCode).toBe(400);
+        });
+
+        it("should return 400 if more than 5 images are provided", async () => {
+            const req = request(app)
+                .post("/api/vehicles")
+                .set("Authorization", `Bearer ${token}`)
+                .field("make", "BMW")
+                .field("model", "M4 Competition")
+                .field("category", "Coupe")
+                .field("price", 153000)
+                .field("quantity", 3);
+
+            for (let i = 0; i < 6; i++) {
+                req.attach("images", dummyImage, `image${i}.jpg`);
+            }
+
+            const res = await req;
+
+            expect(res.statusCode).toBe(400);
+        });
+    });
 });

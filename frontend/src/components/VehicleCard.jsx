@@ -1,6 +1,9 @@
 import { ShoppingCart, Check } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export function VehicleCard({ vehicle }) {
+    const navigate = useNavigate();
+    
     const formatPrice = (price) => {
         return new Intl.NumberFormat('en-US', {
             style: 'currency',
@@ -10,7 +13,10 @@ export function VehicleCard({ vehicle }) {
     };
 
     return (
-        <div className="flex flex-col overflow-hidden rounded-xl border border-border/50 bg-[#121212] transition-colors hover:border-border">
+        <div 
+            onClick={() => navigate(`/vehicles/${vehicle._id || vehicle.id}`)}
+            className="flex flex-col overflow-hidden rounded-xl border border-border/50 bg-[#121212] transition-colors hover:border-border cursor-pointer group"
+        >
             <div className="relative aspect-[4/3] bg-black/50 overflow-hidden">
                 <img
                     src={vehicle.image}
@@ -47,7 +53,10 @@ export function VehicleCard({ vehicle }) {
                     <span>{vehicle.quantity} available</span>
                 </div>
 
-                <button className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-sm font-semibold text-background transition-transform active:scale-[0.98] hover:bg-foreground/90">
+                <button 
+                    onClick={(e) => { e.stopPropagation(); navigate(`/vehicles/${vehicle._id || vehicle.id}`); }}
+                    className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-foreground px-4 py-2.5 text-sm font-semibold text-background transition-transform active:scale-[0.98] hover:bg-foreground/90"
+                >
                     <ShoppingCart className="h-4 w-4" />
                     Purchase
                 </button>
