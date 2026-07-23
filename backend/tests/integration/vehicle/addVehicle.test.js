@@ -44,17 +44,18 @@ describe("POST /api/vehicles", () => {
     });
 
     describe("Add Vehicle", () => {
+        const dummyImage = Buffer.from("fake image content");
+
         it("should add a vehicle successfully", async () => {
             const res = await request(app)
                 .post("/api/vehicles")
                 .set("Authorization", `Bearer ${token}`)
-                .send({
-                    make: "Toyota",
-                    model: "Camry",
-                    category: "Sedan",
-                    price: 25000,
-                    quantity: 10,
-                });
+                .field("make", "Toyota")
+                .field("model", "Camry")
+                .field("category", "Sedan")
+                .field("price", 25000)
+                .field("quantity", 10)
+                .attach("images", dummyImage, "image1.jpg");
 
             expect(res.statusCode).toBe(201);
         });

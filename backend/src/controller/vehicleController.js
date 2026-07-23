@@ -5,11 +5,16 @@ export const addVehicle = async (req, res) => {
     try {
         const { make, model, category, price, quantity } = req.body;
 
+        let images = [];
+        if (req.files && req.files.length > 0) {
+            images = req.files.map(file => file.path || file.originalname);
+        }
+
         // Validation for missing required fields
-        if (!make || !model || !category || price === undefined || quantity === undefined) {
+        if (!make || !model || !category || price === undefined || quantity === undefined || images.length === 0) {
             return res.status(400).json({
                 success: false,
-                message: "Please provide all required fields"
+                message: "Please provide all required fields including at least 1 image"
             });
         }
 
@@ -33,7 +38,8 @@ export const addVehicle = async (req, res) => {
             model,
             category,
             price,
-            quantity
+            quantity,
+            images
         });
 
         return res.status(201).json({
@@ -103,6 +109,10 @@ export const updateVehicle = async (req, res) => {
     try {
         const { id } = req.params;
         const updates = req.body;
+
+        if (req.files && req.files.length > 0) {
+            updates.images = req.files.map(file => file.path || file.originalname);
+        }
 
         if (!mongoose.Types.ObjectId.isValid(id)) {
             return res.status(400).json({

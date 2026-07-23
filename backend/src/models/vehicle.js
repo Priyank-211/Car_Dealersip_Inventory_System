@@ -26,6 +26,14 @@ const vehicleSchema = new mongoose.Schema(
             type: Number,
             required: [true, "Quantity is required"],
             min: [0, "Quantity cannot be negative"]
+        },
+        images: {
+            type: [String],
+            required: [true, "At least 1 image is required"],
+            validate: [
+                { validator: (v) => v && v.length >= 1, message: "Minimum 1 image required" },
+                { validator: (v) => v && v.length <= 5, message: "Maximum 5 images allowed" }
+            ]
         }
     },
     {
