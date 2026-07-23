@@ -36,8 +36,8 @@ describe("GET /api/vehicles", () => {
         it("should return a list of vehicles successfully", async () => {
             // Seed the database
             await Vehicle.create([
-                { make: "Toyota", model: "Camry", category: "Sedan", price: 25000, quantity: 5 },
-                { make: "Honda", model: "Civic", category: "Sedan", price: 22000, quantity: 3 }
+                { make: "Toyota", model: "Camry", category: "Sedan", price: 25000, quantity: 5, images: ["/test.jpg"] },
+                { make: "Honda", model: "Civic", category: "Sedan", price: 22000, quantity: 3, images: ["/test.jpg"] }
             ]);
 
             const res = await request(app).get("/api/vehicles");
@@ -57,7 +57,8 @@ describe("GET /api/vehicles", () => {
                 model: "Mustang",
                 category: "Coupe",
                 price: 35000,
-                quantity: 2
+                quantity: 2,
+                images: ["/test.jpg"]
             });
 
             const res = await request(app).get(`/api/vehicles/${newVehicle._id}`);

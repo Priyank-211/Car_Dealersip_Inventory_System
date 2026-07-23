@@ -58,6 +58,7 @@ describe("PATCH /api/vehicles/:id/restock", () => {
             category: "Coupe",
             price: 35000,
             quantity: 5, // Starting with 5 in stock
+            images: ["/test-image.jpg"]
         });
         testVehicleId = vehicle._id.toString();
     });

@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const apiInstance = axios.create({
-    baseURL: '/api',
+    baseURL: import.meta.env.VITE_API_URL || '/api',
 });
 
 apiInstance.interceptors.request.use(
@@ -62,5 +62,15 @@ export const api = {
     toggleFavorite: async (vehicleId) => {
         const response = await apiInstance.post(`/users/favorites/${vehicleId}`);
         return response.data.favorites;
+    },
+
+    purchaseVehicle: async (id) => {
+        const response = await apiInstance.post(`/vehicles/${id}/purchase`);
+        return response.data;
+    },
+
+    getPurchases: async () => {
+        const response = await apiInstance.get('/users/purchases');
+        return response.data.purchases;
     }
 };

@@ -1,4 +1,5 @@
 import User from "../models/user.js";
+import Purchase from "../models/purchase.js";
 
 // Get user's favorite vehicle IDs
 export const getFavorites = async (req, res) => {
@@ -50,6 +51,24 @@ export const toggleFavorite = async (req, res) => {
         });
     } catch (error) {
         console.error("Error toggling favorite:", error);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+// Get user's purchases
+export const getPurchases = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const purchases = await Purchase.find({ user: userId })
+            .populate("vehicle")
+            .sort({ createdAt: -1 });
+
+        return res.status(200).json({
+            success: true,
+            purchases
+        });
+    } catch (error) {
+        console.error("Error fetching purchases:", error);
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };

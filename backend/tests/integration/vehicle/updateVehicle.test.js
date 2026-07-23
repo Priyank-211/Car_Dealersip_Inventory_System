@@ -58,6 +58,7 @@ describe("PUT /api/vehicles/:id", () => {
             category: "Sedan",
             price: 20000,
             quantity: 5,
+            images: ["/test.jpg"]
         });
         testVehicleId = vehicle._id.toString();
     });

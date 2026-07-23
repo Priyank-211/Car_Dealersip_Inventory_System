@@ -10,6 +10,7 @@ export default function VehicleDetails() {
     const { id } = useParams();
     const [vehicle, setVehicle] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [purchasing, setPurchasing] = useState(false);
     const [selectedImageIdx, setSelectedImageIdx] = useState(0);
     const { toggleFavorite, isFavorite } = useFavorites();
     const { user } = useAuth();
@@ -59,13 +60,25 @@ export default function VehicleDetails() {
     const inStock = vehicle.quantity > 0;
     const isFav = isFavorite(vehicle._id || vehicle.id);
 
-    const handlePurchase = () => {
+    const handlePurchase = async () => {
         if (!user) {
             navigate("/login");
             return;
         }
-        // TODO: Implement actual purchase flow
-        alert("Purchase flow coming soon!");
+        
+        try {
+            setPurchasing(true);
+            await api.purchaseVehicle(vehicle._id || vehicle.id);
+            alert(`Successfully purchased ${vehicle.make} ${vehicle.model}!`);
+            
+            // Refetch to get updated stock
+            const data = await api.getVehicleById(id);
+            setVehicle(data);
+        } catch (err) {
+            alert(err.response?.data?.message || err.message || "Failed to purchase vehicle");
+        } finally {
+            setPurchasing(false);
+        }
     };
 
 
@@ -151,14 +164,16 @@ export default function VehicleDetails() {
 
                         <button
                             onClick={handlePurchase}
-                            disabled={!inStock}
-                            className={`w-full py-4 rounded-xl text-lg font-bold transition-all ${
+                            disabled={!inStock || purchasing}
+                            className={`w-full py-4 rounded-xl text-lg font-bold transition-all flex items-center justify-center gap-2 ${
                                 inStock 
                                 ? 'bg-primary text-primary-foreground hover:bg-primary/90 shadow-lg shadow-primary/20 active:scale-[0.98]' 
                                 : 'bg-secondary text-muted-foreground cursor-not-allowed border border-border'
                             }`}
                         >
-                            {inStock ? 'Purchase Vehicle' : 'Out of Stock'}
+                            {purchasing ? (
+                                <><Loader2 className="h-5 w-5 animate-spin" /> Processing...</>
+                            ) : inStock ? 'Purchase Vehicle' : 'Out of Stock'}
                         </button>
 
                         <button

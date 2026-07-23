@@ -58,6 +58,7 @@ describe("DELETE /api/vehicles/:id", () => {
             category: "Truck",
             price: 45000,
             quantity: 2,
+            images: ["/test.jpg"]
         });
         testVehicleId = vehicle._id.toString();
     });
