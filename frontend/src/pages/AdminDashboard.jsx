@@ -3,6 +3,7 @@ import { Plus, Pencil, Trash2, PackagePlus, AlertTriangle, Search, Car, LayoutDa
 import { Link, useNavigate } from 'react-router-dom'
 import Modal from '../components/Modal.jsx'
 import AddVehicleModal from '../components/AddVehicleModal.jsx'
+import EditVehicleModal from '../components/EditVehicleModal.jsx'
 import { api } from '../lib/api.js'
 import { currency, stockStatus } from '../lib/format.js'
 import { useAuth } from '../context/AuthContext'
@@ -23,6 +24,7 @@ export default function AdminDashboard() {
   const [restockQty, setRestockQty] = useState('')
   const [restocking, setRestocking] = useState(false)
   const [addModalOpen, setAddModalOpen] = useState(false)
+  const [editTarget, setEditTarget] = useState(null)
 
   const load = () => {
     setLoading(true)
@@ -234,7 +236,7 @@ export default function AdminDashboard() {
                               <button onClick={() => openRestock(v)} className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground transition-colors" title="Restock">
                                 <Box className="h-4 w-4" />
                               </button>
-                              <button className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground transition-colors" title="Edit">
+                              <button onClick={() => setEditTarget(v)} className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-secondary text-muted-foreground hover:bg-secondary/80 hover:text-foreground transition-colors" title="Edit">
                                 <Pencil className="h-4 w-4" />
                               </button>
                               <button onClick={() => setDeleteTarget(v)} className="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-colors" title="Delete">
@@ -318,6 +320,18 @@ export default function AdminDashboard() {
           showToast('success', 'Vehicle added successfully!');
           load();
         }} 
+      />
+
+      {/* Edit Vehicle Modal */}
+      <EditVehicleModal
+        open={!!editTarget}
+        vehicle={editTarget}
+        onClose={() => setEditTarget(null)}
+        onSuccess={() => {
+          setEditTarget(null);
+          showToast('success', 'Vehicle updated successfully!');
+          load();
+        }}
       />
 
       {/* Toast */}
